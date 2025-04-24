@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Roller</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .dice {
+            width: 100px;
+            height: 100px;
+            background-color: #3a3a3a;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            cursor: pointer;
+            margin: 10px;
+            color: #eee;
+            font-weight: bold;
+            border: 2px solid #eee;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        #rollButton {
+            background-color: #333; /* Dark color */
+            color: white;
+            font-size: 1em;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dice" id="dice1" onclick="rollDice('dice1')">1</div>
+    <button id="rollButton" onclick="rollDice('dice1')">Roll the Dice</button>
+
+    <script src="https://unpkg.com/gsap@3.9.0/dist/gsap.min.js"></script>
+    <script>
+    function rollDice(diceId) {
+        const diceElement = document.getElementById(diceId);
+
+        gsap.to(diceElement, {
+            rotation: 360,
+            y: -30,
+            duration: 0.8,
+            ease: "bounce.out",
+            onStart: () => {
+                // Add some "ghetto" style during movement
+                diceElement.style.backgroundColor = "#ffcc00";  // Yellow background
+                diceElement.style.color = "#000";  // Black text
+            },
+            onComplete: () => {
+                updateDiceValue();
+                // Reset styles after the movement
+                diceElement.style.backgroundColor = "#3a3a3a";  // Original background
+                diceElement.style.color = "#eee";  // Original text color
+                // Delay the reset by 1 seconds
+                gsap.delayedCall(1, () => {
+                    // Reset animation properties
+                    gsap.set(diceElement, { rotation: 0, y: 0 });
+                });
+            }
+        });
+
+        function updateDiceValue() {
+            const randomNumber = Math.floor(Math.random() * 6) + 1;
+            diceElement.innerText = randomNumber;
+        }
+    }
+</script>
+
+</body>
+</html>

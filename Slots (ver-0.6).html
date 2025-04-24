@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slot Machine</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: Gray;
+    }
+
+    .slot-machine {
+      display: flex;
+      border: 5px solid #e6ac00;
+      overflow: hidden;
+      position: relative;
+      
+    }
+
+    .slot {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #000000;
+      font-size: 24px;
+      border-right: 2px solid #333;
+    }
+
+    .slot:last-child {
+      border-right: none;
+    }
+
+    #spinButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #resultBox {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #00ffff;
+      border: 2px solid #333;
+      border-radius: 5px;
+      font-size: 18px;
+    }
+
+    #coinCounter {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #bettingAmount {
+      margin-top: 20px;
+      font-size: 18px;
+      background-color: Black;
+      color: White;
+    }
+
+    #legend {
+      margin-top: 20px;
+      font-size: 16px;
+      border: 5px solid #e6ac00;
+      border-radius: 25px;
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="slot-machine" id="slotMachine">
+    <!-- Slots will be dynamically generated using JavaScript -->
+  </div>
+
+  <label for="bettingAmount">Betting Amount:</label>
+  <input type="number" id="bettingAmount" min="1" value="1">
+
+  <button id="spinButton" onclick="spinSlots()">Spin</button>
+
+  <div id="resultBox"></div>
+  <div id="coinCounter">Coins: 500</div>
+
+  <div id="legend">
+    <p><strong>Legend:</strong></p>
+    <p>3 consecutive symbols: x100</p>
+    <p>4 consecutive symbols: x250</p>
+    <p>5 consecutive symbols: x500</p>
+  </div>
+
+  <script>
+    const symbols = ['🍒', '🍋', '🍇', '🍊', '🍉', '🍎', '🍓', '🍍', '🥭', '🍑'];
+    const probabilities = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]; // Set your probabilities here
+    const numSlots = 5;
+    let spinning = false;
+    let coins = 500;
+
+    const losingAlerts = [
+      'You suck!',
+      'You win.... NOTHING!',
+      'Nothing is real!.',
+      'Give, me, more!',
+      'Hard luck!',
+      'Go cry to your mother!',
+      'Sorry, no win.',
+      'Try your luck again!',
+      'Win on next spin!',
+      'You fool!'
+    ];
+
+    function getRandomSymbol() {
+      const randomProbability = Math.random();
+      let cumulativeProbability = 0;
+
+      for (let i = 0; i < symbols.length; i++) {
+        cumulativeProbability += probabilities[i];
+        if (randomProbability <= cumulativeProbability) {
+          return symbols[i];
+        }
+      }
+
+      // Fallback to the last symbol if probabilities are not set correctly
+      return symbols[symbols.length - 1];
+    }
+
+    function getRandomLosingAlert() {
+      const randomIndex = Math.floor(Math.random() * losingAlerts.length);
+      return losingAlerts[randomIndex];
+    }
+
+    function createSlot() {
+      const slot = document.createElement('div');
+      slot.classList.add('slot');
+      slot.textContent = getRandomSymbol();
+      return slot;
+    }
+
+    function createSlotMachine() {
+      const slotMachine = document.getElementById('slotMachine');
+      slotMachine.innerHTML = ''; // Clear existing slots
+      for (let i = 0; i < numSlots; i++) {
+        slotMachine.appendChild(createSlot());
+      }
+    }
+
+    function updateCoinCounter() {
+      const coinCounter = document.getElementById('coinCounter');
+      coinCounter.textContent = `Coins: ${coins}`;
+    }
+
+    function spinSlots() {
+      if (!spinning && coins > 0) {
+        const bettingAmount = parseInt(document.getElementById('bettingAmount').value, 10) || 1;
+
+        if (bettingAmount <= 0) {
+          alert('Betting amount must be greater than 0.');
+          return;
+        }
+
+        coins -= bettingAmount; // Deduct betting amount for each spin
+        updateCoinCounter();
+
+        spinning = true;
+        const spins = 5; // Number of spins
+        let spinCount = 0;
+
+        function spin() {
+          createSlotMachine();
+          spinCount++;
+
+          if (spinCount < spins) {
+            setTimeout(spin, 200); // Adjust the delay as needed
+          } else {
+            checkWin(bettingAmount);
+            spinning = false;
+          }
+        }
+
+        spin();
+      }
+    }
+
+    function checkWin(bettingAmount) {
+      const slotMachine = document.getElementById('slotMachine');
+      const slots = Array.from(slotMachine.children);
+      let consecutiveCount = 1;
+
+      for (let i = 1; i < numSlots; i++) {
+        if (slots[i].textContent === slots[i - 1].textContent) {
+          consecutiveCount++;
+          if (consecutiveCount === 5 && i === 4) {
+            // 5 consecutive symbols give 500 coins
+            coins += 500 * bettingAmount;
+            updateCoinCounter();
+            document.getElementById('resultBox').textContent = `Congratulations! You win ${500 * bettingAmount} coins!`;
+            return;
+          } else if (consecutiveCount === 4 && i === 3) {
+            // 4 consecutive symbols starting from the first slot give 250 coins
+            coins += 250 * bettingAmount;
+            updateCoinCounter();
+            document.getElementById('resultBox').textContent = `Congratulations! You win ${250 * bettingAmount} coins!`;
+            return;
+          } else if (consecutiveCount === 3 && i === 2) {
+            // 3 consecutive symbols starting from the first slot give 100 coins
+            coins += 100 * bettingAmount;
+            updateCoinCounter();
+            document.getElementById('resultBox').textContent = `Congratulations! You win ${100 * bettingAmount} coins!`;
+            return;
+          }
+        } else {
+          consecutiveCount = 1; // Reset count if symbols are not consecutive
+        }
+      }
+
+      // If no winning condition is met, display a random losing alert
+      document.getElementById('resultBox').textContent = getRandomLosingAlert();
+    }
+
+    createSlotMachine();
+    updateCoinCounter();
+  </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    
+    body {
+      background-color: black;
+      color: white; 
+    }
+    
+    
+        #board {
+            display: grid;
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(10, 50px);
+            gap: 1px;
+            border: 2px solid #000;
+        }
+
+        .cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            border: 1px solid white;
+        }
+
+        .player1 {
+            background-color: red;
+            color: white;
+        }
+
+        .player2 {
+            background-color: green;
+            color: white;
+        }
+
+        .combined {
+            background-color: gold;
+            color: black;
+        }
+
+        .ladder-start {
+            color: black;
+            background-color: cyan;
+            position: relative;
+        }
+
+        .snake-start {
+            color: white;
+            background-color: purple;
+            position: relative;
+        }
+
+        .arrow {
+            position: absolute;
+            font-size: 10px;
+            bottom: 2px;
+        }
+
+     
+        .arrow-up::before {
+            content: '↑';
+        }
+
+        .arrow-down::before {
+            content: '↓';
+        }
+
+        .winner {
+            background-color: gold;
+            color: black;
+        }
+
+        #announcement {
+            margin-top: 20px;
+            padding: 10px;
+            border: 3px solid white;
+            font-family:Papyrus;
+            font-size:150%;
+        }
+        
+        
+        #menu {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid white;
+            font-family:Comic Sans MS;
+            font-size:100%;
+        }
+        
+        
+        
+        
+    </style>
+    <title>Snake and Ladder Game</title>
+</head>
+<body>
+    <div id="board"></div>
+    <div id="announcement"></div>
+    <button id="resetButton">Reset Game</button>
+    <div id="menu"></div>
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const board = document.getElementById('board');
+            const announcementBox = document.getElementById('announcement');
+            const menuBox = document.getElementById('menu');
+            const size = 10;
+            let player1Position = 1;
+            let player2Position = 1;
+            let currentPlayer = 1;
+            const winningPosition = 100;
+
+            // Create the board
+            for (let row = size; row >= 1; row--) {
+                for (let col = 1; col <= size; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.id = (row % 2 !== 0) ? (row - 1) * size + col : (row - 1) * size + (size - col + 1);
+                    cell.textContent = cell.id;
+                    board.appendChild(cell);
+                    announcementBox.textContent = `Welcome! Press Space to throw the first Dice!`;
+                    menuBox.textContent = `This is a menu`;
+
+                }
+            }
+
+            // Add snakes and ladders
+            const snakesAndLadders = {
+                4: 14,
+                9: 31,
+                24: 2,
+                34: 48,
+                36: 78,
+                40: 20,
+                46: 27,
+                63: 38,
+                71: 91,
+                73: 49,
+                75: 87,
+                82: 61,
+                98: 67
+            };
+
+            Object.entries(snakesAndLadders).forEach(([position, destination]) => {
+                const cell = document.getElementById(position);
+                cell.classList.add(destination > position ? 'ladder-start' : 'snake-start');
+
+                // Add arrow
+                const arrow = document.createElement('div');
+                arrow.classList.add('arrow', destination > position ? 'arrow-up' : 'arrow-down');
+                arrow.textContent = destination;
+                cell.appendChild(arrow);
+            });
+
+           // Move the player
+    function movePlayer(newPosition, playerClass) {
+        const currentCell = document.getElementById(playerClass === 'player1' ? player1Position : player2Position);
+        const combinedCell = document.getElementById(player1Position === player2Position ? player1Position : null);
+
+        // Remove gold color from both current cell and combined cell
+        if (combinedCell) {
+            combinedCell.classList.remove('combined');
+        }
+
+        currentCell.classList.remove(playerClass);
+        currentCell.classList.remove('ladder-start', 'snake-start'); // Reset color to original
+
+        const newCell = document.getElementById(newPosition);
+        newCell.classList.add(playerClass);
+
+        // Update player position
+        if (playerClass === 'player1') {
+            player1Position = newPosition;
+        } else {
+            player2Position = newPosition;
+        }
+
+        // Check for win condition
+        if (player1Position >= winningPosition || player2Position >= winningPosition) {
+            announceWinner(player1Position >= winningPosition ? 'Player 1' : 'Player 2');
+        }
+
+        
+
+        // Check if both players are on the same cell
+        if (player1Position === player2Position) {
+            newCell.classList.add('combined');
+        }
+
+        // Switch to the next player
+        currentPlayer = (currentPlayer === 1) ? 2 : 1;
+    }
+
+            // Announce the winner
+            function announceWinner(winner) {
+                const winnerAnnouncement = `${winner} wins!`;
+                announcementBox.textContent = winnerAnnouncement;
+                announcementBox.classList.add('winner');
+
+                document.getElementById(player1Position).classList.remove('player1', 'player2', 'combined');
+                document.getElementById(player2Position).classList.remove('player1', 'player2', 'combined');
+                document.getElementById(player1Position).classList.add('winner');
+                document.getElementById(player2Position).classList.add('winner');
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+
+            // Roll the dice and move the player
+            function rollDice() {
+                const diceResult = Math.floor(Math.random() * 6) + 1;
+                const diceRollAnnouncement = `Player ${currentPlayer} rolled a ${diceResult}!`;
+                announcementBox.textContent = diceRollAnnouncement;
+                
+
+                const newPosition = (currentPlayer === 1) ? player1Position + diceResult : player2Position + diceResult;
+
+                if (currentPlayer === 1) {
+                    movePlayer(snakesAndLadders[newPosition] || newPosition, 'player1');
+                } else {
+                    movePlayer(snakesAndLadders[newPosition] || newPosition, 'player2');
+                }
+            }
+
+            // Initialize players at position 1
+            document.getElementById('1').classList.add('player1');
+
+            // Add event listener for dice roll
+            document.addEventListener('keydown', handleKeyPress);
+            
+           
+            function handleKeyPress(event) {
+                if (event.key === ' ') {
+                    rollDice();
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                //reset button criss
+                document.getElementById('resetButton').addEventListener('click', resetGame);
+
+function resetGame() {
+    // Reset player positions and current player
+    player1Position = 1;
+    player2Position = 1;
+    currentPlayer = 1;
+
+    // Reset cell classes
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell => {
+        cell.classList.remove('player1', 'player2', 'combined', 'winner');
+    });
+
+    // Reset announcement box
+    announcementBox.textContent = 'Welcome! Press Space to throw the first Dice!';
+    announcementBox.classList.remove('winner');
+
+    // Add players back to starting position
+    document.getElementById('1').classList.add('player1');
+
+    // Re-add event listener for dice roll
+    document.addEventListener('keydown', handleKeyPress);
+}
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            }
+        });
+    </script>
+</body>
+</html>

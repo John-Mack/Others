@@ -1,4 +1,4 @@
-Sub LaverTrain()
+Sub LaverVoiture()
     Dim wsSource As Worksheet, wsDest As Worksheet, ws As Worksheet
     Dim btn As Object, ligne As Long
     Dim nextRowDest As Long
@@ -11,9 +11,9 @@ Dim newBtn As Button
     
 
     ' Définir les feuilles
-    Set wsSource = ThisWorkbook.Sheets("Lave-Train")
-    Set wsDest = ThisWorkbook.Sheets("Lave-Train")
-''''' Set wsDest = ThisWorkbook.Sheets("Historique Lave-Train")
+    Set wsSource = ThisWorkbook.Sheets("Lave-Voiture")
+    Set wsDest = ThisWorkbook.Sheets("Lave-Voiture")
+''''' Set wsDest = ThisWorkbook.Sheets("Historique Lave-Voiture")
 
 
     ' Identifier le bouton qui a été cliqué
@@ -36,13 +36,13 @@ Dim newBtn As Button
 
 
 ' Référence vers la première feuille
-    Set ws = ThisWorkbook.Sheets("Lave-Train")
+    Set ws = ThisWorkbook.Sheets("Lave-Voiture")
 
     ' Ajouter un bouton "Fermer l'Avis" dans la colonne H
     Set newBtn = ws.Buttons.Add(Cells(nextRow, 5).Left, Cells(nextRow, 5).Top, 121, 25)
     With newBtn
-        .OnAction = "LaverTrain" ' Associer la macro de fermeture à ce bouton
-        .Caption = "Train lavé"  ' Texte du bouton
+        .OnAction = "LaverVoiture" ' Associer la macro de fermeture à ce bouton
+        .Caption = "Voiture lavé"  ' Texte du bouton
         .Name = "btnLavé_" & nextRow ' Nom unique pour chaque bouton
     End With
     
@@ -64,7 +64,7 @@ Dim newBtn As Button
     Rows("2:100").RowHeight = 25
     Rows("2:100").Font.Size = 11
 
-    MsgBox "Avis Lavage de train mis-à-jour correctement.", vbInformation
+    MsgBox "Avis Lavage de Voiture mis-à-jour correctement.", vbInformation
 End Sub
 
     ' Remplir la TextBox avec la date et l'heure actuelles
